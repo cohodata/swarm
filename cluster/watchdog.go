@@ -296,6 +296,13 @@ func NewWatchdog(cluster Cluster, opts *WatchdogOpts) *Watchdog {
 		opts:    opts,
 	}
 	cluster.RegisterEventHandler(w)
+
+	for _, e := range cluster.Engines() {
+		if !e.IsHealthy() {
+			go w.rescheduleContainers(e)
+		}
+	}
+
 	return w
 }
 

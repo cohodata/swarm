@@ -61,6 +61,7 @@ type Cluster struct {
 	eventHandlers     *cluster.EventHandlers
 	engines           map[string]*cluster.Engine
 	pendingEngines    map[string]*cluster.Engine
+	removedEngines    map[string]*cluster.Engine
 	scheduler         *scheduler.Scheduler
 	discovery         discovery.Backend
 	pendingContainers map[string]*pendingContainer
@@ -79,6 +80,7 @@ func NewCluster(scheduler *scheduler.Scheduler, TLSConfig *tls.Config, discovery
 		eventHandlers:     cluster.NewEventHandlers(),
 		engines:           make(map[string]*cluster.Engine),
 		pendingEngines:    make(map[string]*cluster.Engine),
+		removedEngines:    make(map[string]*cluster.Engine),
 		scheduler:         scheduler,
 		TLSConfig:         TLSConfig,
 		discovery:         discovery,
@@ -309,6 +311,7 @@ func (c *Cluster) addEngine(addr string) bool {
 	// Add it to pending engine map, indexed by address. This will prevent
 	// duplicates from entering
 	c.Lock()
+	delete(c.removedEngines, addr) //remove the tombstone for this engine if one exists.
 	c.pendingEngines[addr] = engine
 	c.Unlock()
 
@@ -382,6 +385,10 @@ func (c *Cluster) removeEngine(addr string) bool {
 	} else {
 		delete(c.engines, engine.ID)
 	}
+	// keep a tombstone for this engine
+	engine.MarkUnhealthy()
+	c.removedEngines[addr] = engine
+
 	log.Infof("Removed Engine %s", engine.Name)
 	return true
 }
@@ -1010,6 +1017,24 @@ func (c *Cluster) RefreshEngine(hostname string) error {
 		}
 	}
 	return fmt.Errorf("no engine found with hostname %s", hostname)
+}
+
+// This method is used by the watchdog to initiate container rescheduling
+// when a new primary is elected.  Thus, we must return all engines in
+// the cluster, including tombstones for those that have been removed
+func (c *Cluster) Engines() cluster.Engines {
+	c.RLock()
+	defer c.RUnlock()
+
+	out := cluster.Engines{}
+	for _, e := range c.engines {
+		out = append(out, e)
+	}
+	for _, e := range c.removedEngines {
+		out = append(out, e)
+	}
+
+	return out
 }
 
 // TagImage tags an image.

@@ -142,6 +142,9 @@ type Engine struct {
 	DeltaDuration   time.Duration // swarm's systime - engine's systime
 }
 
+// represents a list of engines
+type Engines []*Engine
+
 // NewEngine is exported
 func NewEngine(addr string, overcommitRatio float64, opts *EngineOpts) *Engine {
 	e := &Engine{
@@ -303,6 +306,10 @@ func (e *Engine) IsHealthy() bool {
 	e.RLock()
 	defer e.RUnlock()
 	return e.state == stateHealthy
+}
+
+func (e *Engine) MarkUnhealthy() {
+	e.setState(stateUnhealthy)
 }
 
 // HealthIndicator returns degree of healthiness between 0 and 100.

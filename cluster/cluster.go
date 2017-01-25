@@ -106,4 +106,6 @@ type Cluster interface {
 
 	// RefreshEngines refreshes all engines in the cluster.
 	RefreshEngines() error
+
+	Engines() Engines
 }

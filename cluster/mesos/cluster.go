@@ -726,3 +726,7 @@ func (c *Cluster) RefreshEngine(hostname string) error {
 func (c *Cluster) RefreshEngines() error {
 	return nil
 }
+
+func (c *Cluster) Engines() cluster.Engines {
+	return cluster.Engines{}
+}

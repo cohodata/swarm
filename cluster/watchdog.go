@@ -110,6 +110,8 @@ func (w *Watchdog) rescheduleContainersHelper(e *Engine) bool {
 			continue
 		}
 
+		log.Debugf("Attempting to reschedule container %s (%s) %+v from %s", c.ID, c.Info.Name, c.Info.State, c.Engine.Name)
+
 		// Remove the container from the dead engine. If we don't, then both
 		// the old and new one will show up in docker ps.
 		// We have to do this before calling `CreateContainer`, otherwise it
@@ -150,6 +152,8 @@ func (w *Watchdog) rescheduleContainersHelper(e *Engine) bool {
 					globalNetworks[networkName] = endpoint
 					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 					defer cancel()
+
+					log.Debugf("Disconnecting container %s (%s) from network %s", c.ID, c.Info.Name, networkName)
 					err = randomEngine.apiClient.NetworkDisconnect(ctx, networkName, name, true)
 					if err != nil {
 						// do not abort here as this endpoint might have been removed before
@@ -218,15 +222,17 @@ func (w *Watchdog) rescheduleContainersHelper(e *Engine) bool {
 
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
+
+			log.Debugf("Connecting container %s (%s) to network %s", newContainer.ID, newContainer.Info.Name, networkName)
 			err = newContainer.Engine.apiClient.NetworkConnect(ctx, networkName, name, endpoint)
 			if err != nil {
 				log.Warnf("Failed to connect network %s to container %s: %v", networkName, name, err)
 			}
 		}
 
-		log.Infof("Rescheduled container %s from %s to %s as %s", c.ID, c.Engine.Name, newContainer.Engine.Name, newContainer.ID)
+		log.Infof("Rescheduled container %s (%s) from %s to %s as %s", c.ID, c.Info.Name, c.Engine.Name, newContainer.Engine.Name, newContainer.ID)
 		if shouldRestart(c) {
-			log.Infof("Container %s was running, scheduling start of container %s", c.ID, newContainer.ID)
+			log.Infof("Scheduling start of container %s (%s)", newContainer.ID, newContainer.Info.Name)
 			go w.restartContainer(newContainer)
 		}
 	}
@@ -271,6 +277,7 @@ func (w *Watchdog) restartContainer(c *Container) {
 // taking its state and restart policy into account.
 func shouldRestart(c *Container) bool {
 	if c.Info.State.Running {
+		log.Debugf("Container %s (%s) was running and should be restarted", c.ID, c.Info.Name)
 		return true
 	}
 
@@ -279,10 +286,13 @@ func shouldRestart(c *Container) bool {
 	// container has been stopped manually by the user.
 	var rp = c.Config.HostConfig.RestartPolicy
 	if rp.IsAlways() {
+		log.Debugf("Container %s (%s) has a restart policy of '%s' and should be restarted", c.ID, c.Info.Name, rp.Name)
 		return true
 	} else if rp.IsOnFailure() && c.Info.State.ExitCode != 0 && c.Info.RestartCount < rp.MaximumRetryCount {
+		log.Debugf("Container %s (%s) has a restart policy of '%s' and should be restarted", c.ID, c.Info.Name, rp.Name)
 		return true
 	} else {
+		log.Debugf("Container %s (%s) has a restart policy of '%s' and should not be restarted", c.ID, c.Info.Name, rp.Name)
 		return false
 	}
 }

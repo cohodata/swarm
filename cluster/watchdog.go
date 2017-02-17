@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"math"
 	"sync"
 	"time"
 
@@ -15,8 +16,9 @@ const (
 )
 
 type WatchdogOpts struct {
-	RescheduleRetryInterval time.Duration
-	RescheduleRetry         int
+	RescheduleRetry            int
+	RescheduleRetryInterval    time.Duration
+	RescheduleRetryMaxInterval time.Duration
 }
 
 // Watchdog listens to cluster events and handles container rescheduling
@@ -74,15 +76,21 @@ func (w *Watchdog) removeDuplicateContainers(e *Engine) {
 func (w *Watchdog) rescheduleContainers(e *Engine) {
 	limit := w.opts.RescheduleRetry
 	retryInterval := w.opts.RescheduleRetryInterval
+	retryMaxInterval := w.opts.RescheduleRetryMaxInterval
 
-	log.Debugf("Node %s failed - making %d attempt(s) to reschedule containers", e.ID, limit)
+	log.Debugf("Node %s failed - attempting to reschedule containers interval=%s max_interval=%s limit=%d)", e.ID, retryInterval, retryMaxInterval, limit)
 
 	attempt := 1
 	for !w.rescheduleContainersHelper(e) {
-		if attempt < limit {
-			log.Debugf("Node %s - could not reschedule containers, attempt %d of %d, retrying in %s", e.ID, attempt, limit, retryInterval)
+		if limit == 0 || attempt < limit {
+			sleep := time.Duration(math.Min(
+				retryMaxInterval.Seconds(),
+				retryInterval.Seconds()*math.Pow(1.5, float64(attempt-1)),
+			)) * time.Second
+
+			log.Debugf("Node %s - could not reschedule containers, attempt %d (limit %d), retrying in %s", e.ID, attempt, limit, sleep)
 			attempt++
-			time.Sleep(retryInterval)
+			time.Sleep(sleep)
 		} else {
 			log.Errorf("Node %s - could not reschedule containers after %d attempt(s)", e.ID, limit)
 			break

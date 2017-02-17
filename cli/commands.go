@@ -28,7 +28,7 @@ var (
 				flTLS, flTLSCaCert, flTLSCert, flTLSKey, flTLSVerify,
 				flRefreshIntervalMin, flRefreshIntervalMax, flFailureRetry, flRefreshRetry,
 				flHeartBeat,
-				flRescheduleRetry, flRescheduleRetryInterval,
+				flRescheduleRetry, flRescheduleRetryInterval, flRescheduleRetryMaxInterval,
 				flEnableCors,
 				flCluster, flDiscoveryOpt, flClusterOpt, flRefreshOnNodeFilter, flContainerNameRefreshFilter},
 			Action: manage,

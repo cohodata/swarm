@@ -269,8 +269,8 @@ func manage(c *cli.Context) {
 	}
 
 	rescheduleRetry := c.Int("reschedule-retry")
-	if rescheduleRetry <= 0 {
-		log.Fatalf("invalid --reschedule-retry. Must be a postive number.")
+	if rescheduleRetry < 0 {
+		log.Fatalf("invalid --reschedule-retry. Must be a non-negative integer.")
 		rescheduleRetry = cluster.DefaultRescheduleRetry
 	}
 	rescheduleRetryInterval := c.Duration("reschedule-retry-interval")
@@ -278,9 +278,15 @@ func manage(c *cli.Context) {
 		log.Fatalf("invalid --reschedule-retry-interval. Must be a positive duration.")
 		rescheduleRetryInterval = time.Duration(0)
 	}
+	rescheduleRetryMaxInterval := c.Duration("reschedule-retry-max-interval")
+	if rescheduleRetryMaxInterval < 0 {
+		log.Fatalf("invalid --reschedule-retry-max-interval. Must be a positive duration.")
+		rescheduleRetryMaxInterval = time.Duration(300) * time.Second
+	}
 	watchdogOpts := &cluster.WatchdogOpts{
-		RescheduleRetryInterval: rescheduleRetryInterval,
-		RescheduleRetry:         rescheduleRetry,
+		RescheduleRetry:            rescheduleRetry,
+		RescheduleRetryInterval:    rescheduleRetryInterval,
+		RescheduleRetryMaxInterval: rescheduleRetryMaxInterval,
 	}
 
 	uri := getDiscovery(c)

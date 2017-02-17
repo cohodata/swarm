@@ -155,12 +155,17 @@ var (
 	flRescheduleRetry = cli.IntFlag{
 		Name:  "reschedule-retry",
 		Value: 1,
-		Usage: "The limit on the number of attempts to reschedule a container",
+		Usage: "The limit on the number of attempts to reschedule a container.  Defaults to 1 rescheduling attempt.  A value of 0 means retry forever.",
 	}
 	flRescheduleRetryInterval = cli.StringFlag{
 		Name:  "reschedule-retry-interval",
 		Value: "0s",
-		Usage: "The delay between container rescheduling attempts.",
+		Usage: "The base delay between container rescheduling attempts following an exponential backoff.  See also --reschedule-retry-max-interval",
+	}
+	flRescheduleRetryMaxInterval = cli.StringFlag{
+		Name:  "reschedule-retry-max-interval",
+		Value: "300s",
+		Usage: "The maximum delay between container container rescheduling attempts.  See aso --reschedule-retry-interval",
 	}
 
 	flRefreshOnNodeFilter = cli.BoolFlag{

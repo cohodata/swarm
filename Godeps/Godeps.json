@@ -206,28 +206,28 @@
 		},
 		{
 			"ImportPath": "github.com/docker/libkv",
-			"Comment": "v0.2.1-7-g1ac79c6",
-			"Rev": "1ac79c667ae87ee0b12f3c46089116f73bda8b7a"
+			"Comment": "v0.2.1-8-g43ed91b",
+			"Rev": "43ed91b6b91747b5acc67038f9e5e43298fb6df6"
 		},
 		{
 			"ImportPath": "github.com/docker/libkv/store",
-			"Comment": "v0.2.1-7-g1ac79c6",
-			"Rev": "1ac79c667ae87ee0b12f3c46089116f73bda8b7a"
+			"Comment": "v0.2.1-8-g43ed91b",
+			"Rev": "43ed91b6b91747b5acc67038f9e5e43298fb6df6"
 		},
 		{
 			"ImportPath": "github.com/docker/libkv/store/consul",
-			"Comment": "v0.2.1-7-g1ac79c6",
-			"Rev": "1ac79c667ae87ee0b12f3c46089116f73bda8b7a"
+			"Comment": "v0.2.1-8-g43ed91b",
+			"Rev": "43ed91b6b91747b5acc67038f9e5e43298fb6df6"
 		},
 		{
 			"ImportPath": "github.com/docker/libkv/store/etcd",
-			"Comment": "v0.2.1-7-g1ac79c6",
-			"Rev": "1ac79c667ae87ee0b12f3c46089116f73bda8b7a"
+			"Comment": "v0.2.1-8-g43ed91b",
+			"Rev": "43ed91b6b91747b5acc67038f9e5e43298fb6df6"
 		},
 		{
 			"ImportPath": "github.com/docker/libkv/store/zookeeper",
-			"Comment": "v0.2.1-7-g1ac79c6",
-			"Rev": "1ac79c667ae87ee0b12f3c46089116f73bda8b7a"
+			"Comment": "v0.2.1-8-g43ed91b",
+			"Rev": "43ed91b6b91747b5acc67038f9e5e43298fb6df6"
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
